@@ -21,11 +21,8 @@ echo
 
 # Check if scripts exist
 SCRIPT_DIR="$(dirname $(pwd))"
-if [[ ! -f "$SCRIPT_DIR/git-merge-repos.zsh" ]]; then
-    printf "${RED}Error: git-merge-repos.zsh not found${NC}\n"
-    exit 1
-fi
 
+# Ensure unified script exists
 if [[ ! -f "$SCRIPT_DIR/git-merge-repos-advanced.zsh" ]]; then
     printf "${RED}Error: git-merge-repos-advanced.zsh not found${NC}\n"
     exit 1

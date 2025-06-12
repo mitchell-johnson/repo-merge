@@ -7,8 +7,8 @@ source "$(dirname $0)/setup_test_repos.zsh"
 
 # Path to scripts
 SCRIPT_DIR="$(cd "$(dirname $0)/.." && pwd)"
-BASIC_SCRIPT="$SCRIPT_DIR/git-merge-repos.zsh"
-ADVANCED_SCRIPT="$SCRIPT_DIR/git-merge-repos-advanced.zsh"
+BASIC_SCRIPT="$SCRIPT_DIR/git-merge-repos-advanced.zsh"
+ADVANCED_SCRIPT="$BASIC_SCRIPT"
 
 # Test T001: Merge simple repo with single branch
 test_simple_merge() {

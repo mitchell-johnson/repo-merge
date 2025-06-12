@@ -75,73 +75,46 @@ USE_GRAFT=false
 SQUASH_MERGE=false
 NO_COMMIT=false
 MERGE_STRATEGY="recursive"
+POSITIONAL=()
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         -s|--subdirectory)
-            SUBDIRECTORY="$2"
-            shift 2
-            ;;
+            SUBDIRECTORY="$2"; shift 2;;
         -b|--branch)
-            SPECIFIC_BRANCH="$2"
-            shift 2
-            ;;
+            SPECIFIC_BRANCH="$2"; shift 2;;
         -t|--skip-tags)
-            SKIP_TAGS=true
-            shift
-            ;;
+            SKIP_TAGS=true; shift;;
         -f|--force)
-            FORCE=true
-            shift
-            ;;
+            FORCE=true; shift;;
         -n|--dry-run)
-            DRY_RUN=true
-            shift
-            ;;
+            DRY_RUN=true; shift;;
         -m|--merge-to)
-            MERGE_TO="$2"
-            shift 2
-            ;;
+            MERGE_TO="$2"; shift 2;;
         -p|--preserve-paths)
-            PRESERVE_PATHS=true
-            shift
-            ;;
+            PRESERVE_PATHS=true; shift;;
         -r|--rewrite-history)
-            REWRITE_HISTORY=true
-            shift
-            ;;
+            REWRITE_HISTORY=true; shift;;
         -g|--graft)
-            USE_GRAFT=true
-            shift
-            ;;
+            USE_GRAFT=true; shift;;
         --squash-merge)
-            SQUASH_MERGE=true
-            shift
-            ;;
+            SQUASH_MERGE=true; shift;;
         --no-commit)
-            NO_COMMIT=true
-            shift
-            ;;
+            NO_COMMIT=true; shift;;
         --strategy)
-            MERGE_STRATEGY="$2"
-            shift 2
-            ;;
+            MERGE_STRATEGY="$2"; shift 2;;
         -h|--help)
-            usage
-            exit 0
-            ;;
-        -*)
-            print_color $RED "Error: Unknown option: $1"
-            usage
-            exit 1
-            ;;
+            usage; exit 0;;
+        --*)
+            print_color $RED "Error: Unknown option: $1"; usage; exit 1;;
         *)
-            break
-            ;;
+            POSITIONAL+=("$1"); shift;;
     esac
 done
 
-# Check required arguments
+# Restore positional parameters
+set -- "${POSITIONAL[@]}"
+
 if [[ $# -lt 2 ]]; then
     print_color $RED "Error: Missing required arguments"
     usage
@@ -314,7 +287,10 @@ if [[ "$SKIP_TAGS" == false ]]; then
         TAGS=()
     else
         # Get all tags from the remote
-        TAGS=($(git ls-remote --tags "$REMOTE_NAME" | awk '{print $2}' | sed 's|^refs/tags/||' | grep -v '\^{}$'))
+        TAGS=($(git ls-remote --tags "$REMOTE_NAME" \
+            | awk '{print $2}' \
+            | sed 's|^refs/tags/||' \
+            | grep -v '\^{}$' || true))
     fi
     CREATED_TAGS=()
     
@@ -377,43 +353,69 @@ if [[ -n "$MERGE_TO" ]] && [[ "$DRY_RUN" == false ]]; then
         print_color $BLUE "Checking out target branch: $MERGE_TO"
         git checkout "$MERGE_TO"
         
-        # Prepare merge command
-        MERGE_CMD="git merge"
-        [[ "$SQUASH_MERGE" == true ]] && MERGE_CMD="$MERGE_CMD --squash"
-        [[ "$NO_COMMIT" == true ]] && MERGE_CMD="$MERGE_CMD --no-commit"
-        MERGE_CMD="$MERGE_CMD --strategy=$MERGE_STRATEGY"
-        
-        # Add merge message
-        MERGE_MSG="Merge $SOURCE_NAME repository"
-        [[ -n "$SUBDIRECTORY" ]] && MERGE_MSG="$MERGE_MSG into $SUBDIRECTORY"
-        
         print_color $BLUE "Merging $MERGE_SOURCE into $MERGE_TO"
-        if $MERGE_CMD -m "$MERGE_MSG" "$MERGE_SOURCE"; then
-            print_color $GREEN "Merge successful!"
-            
-            # AIDEV-NOTE: graft-point - Record merge point for future reference
-            if [[ "$USE_GRAFT" == true ]] && [[ "$NO_COMMIT" == false ]]; then
-                MERGE_COMMIT=$(git rev-parse HEAD)
+        
+        # Build common strategy flag
+        STRATEGY_FLAG="--strategy=$MERGE_STRATEGY"
+
+        if [[ "$SQUASH_MERGE" == true ]]; then
+            # Perform squash merge and create a single commit if --no-commit is not set
+            if git merge --squash $STRATEGY_FLAG --allow-unrelated-histories "$MERGE_SOURCE"; then
+                if [[ "$NO_COMMIT" == false ]]; then
+                    git commit -m "Squash merge $MERGE_SOURCE"
+                fi
+                print_color $GREEN "Squash merge successful!"
+            else
+                print_color $RED "Squash merge failed"
+            fi
+        else
+            # Standard or --no-commit merge (uses Git's default merge message)
+            MERGE_CMD=(git merge $STRATEGY_FLAG --allow-unrelated-histories)
+            if [[ "$NO_COMMIT" == true ]]; then
+                MERGE_CMD+=(--no-commit)
+            else
+                MERGE_MSG="Merge branch '$MERGE_SOURCE'"
+                MERGE_CMD+=(-m "$MERGE_MSG")
+            fi
+            MERGE_CMD+=("$MERGE_SOURCE")
+            if "${MERGE_CMD[@]}"; then
+                print_color $GREEN "Merge successful!"
+            else
+                print_color $RED "Merge failed - manual intervention required"
+                print_color $YELLOW "Resolve conflicts and run: git merge --continue"
+            fi
+        fi
+        
+        # Record graft information when requested (and a commit was created)
+        if [[ "$USE_GRAFT" == true ]] && [[ "$NO_COMMIT" == false ]]; then
+            MERGE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "")
+            if [[ -n "$MERGE_COMMIT" ]]; then
                 echo "# Grafted merge from $SOURCE_NAME" >> .git/info/grafts
                 echo "$MERGE_COMMIT $(git rev-parse $MERGE_SOURCE)" >> .git/info/grafts
             fi
-        else
-            print_color $RED "Merge failed - manual intervention required"
-            print_color $YELLOW "Resolve conflicts and run: git merge --continue"
         fi
     else
         print_color $YELLOW "Could not find source branch to merge"
     fi
 fi
 
+# If no automatic merge requested and preserve-paths is set, switch to imported branch
+if [[ -z "$MERGE_TO" ]] && [[ "$PRESERVE_PATHS" == true ]] && [[ "$DRY_RUN" == false ]]; then
+    IMPORT_BRANCH="${SOURCE_NAME}-${DEFAULT_BRANCH}"
+    if branch_exists "$IMPORT_BRANCH"; then
+        print_color $BLUE "Checking out imported branch: $IMPORT_BRANCH"
+        git checkout "$IMPORT_BRANCH"
+    fi
+fi
+
+# Restore to original branch only if we haven't intentionally switched (i.e., preserve-paths not used)
+if [[ "$PRESERVE_PATHS" == false ]] && [[ "$CURRENT_BRANCH" != "$(git rev-parse --abbrev-ref HEAD)" ]] && [[ "$DRY_RUN" == false ]]; then
+    git checkout "$CURRENT_BRANCH" 2>/dev/null || true
+fi
+
 # Clean up
 print_color $BLUE "\nCleaning up..."
 execute_cmd "git remote remove '$REMOTE_NAME'"
-
-# Return to original branch if we switched
-if [[ "$CURRENT_BRANCH" != "$(git rev-parse --abbrev-ref HEAD)" ]] && [[ "$DRY_RUN" == false ]]; then
-    git checkout "$CURRENT_BRANCH" 2>/dev/null || true
-fi
 
 # Summary
 print_color $GREEN "\n=== Merge Complete ==="

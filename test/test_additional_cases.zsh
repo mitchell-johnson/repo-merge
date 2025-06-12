@@ -8,8 +8,8 @@ source "$(dirname $0)/setup_test_repos.zsh"
 
 # Get script paths
 SCRIPT_DIR="$(cd "$(dirname $0)/.." && pwd)"
-BASIC_SCRIPT="$SCRIPT_DIR/git-merge-repos.zsh"
-ADVANCED_SCRIPT="$SCRIPT_DIR/git-merge-repos-advanced.zsh"
+BASIC_SCRIPT="$SCRIPT_DIR/git-merge-repos-advanced.zsh"
+ADVANCED_SCRIPT="$BASIC_SCRIPT"
 
 # Initialize test environment
 init_test_env
