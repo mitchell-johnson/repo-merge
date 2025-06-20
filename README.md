@@ -12,26 +12,18 @@ Powerful zsh scripts for merging one git repository into another while preservin
 - ✅ Dry-run mode for safety
 - ✅ Advanced features like automatic merging and history rewriting
 
-## Scripts
+## Script List
 
-### 1. `git-merge-repos.zsh` - Basic Merger
+| Script | Platform | Status |
+|--------|----------|--------|
+| `git-merge-repos-advanced.zsh` | macOS / Linux (zsh) | **Primary & tested** |
+| `git-merge-repos.ps1` | Windows PowerShell | _Initial port – **experimental / untested**_ |
 
-The basic script provides core functionality for merging repositories.
+> The former `git-merge-repos.zsh` (basic version) has been removed – the advanced script supersedes it.
 
-**Usage:**
-```bash
-./git-merge-repos.zsh [OPTIONS] <source-repo> <source-name>
-```
+---
 
-**Options:**
-- `-s, --subdirectory <dir>` - Move all files into specified subdirectory
-- `-b, --branch <branch>` - Only merge specified branch
-- `-t, --skip-tags` - Skip importing tags
-- `-f, --force` - Force overwrite existing branches/tags
-- `-n, --dry-run` - Preview changes without making them
-- `-h, --help` - Show help message
-
-### 2. `git-merge-repos-advanced.zsh` - Advanced Merger
+### `git-merge-repos-advanced.zsh` (main script)
 
 The advanced script includes additional features for complex merging scenarios.
 
@@ -45,16 +37,6 @@ The advanced script includes additional features for complex merging scenarios.
 - `--strategy <strategy>` - Specify merge strategy
 
 ## Quick Examples
-
-### Basic merge
-```bash
-./git-merge-repos.zsh https://github.com/user/other-repo.git other-repo
-```
-
-### Merge into subdirectory
-```bash
-./git-merge-repos.zsh -s libs/component https://github.com/user/component.git component
-```
 
 ### Automatic integration
 ```bash
@@ -72,10 +54,10 @@ The advanced script includes additional features for complex merging scenarios.
 
 ## Branch and Tag Naming
 
-If you merge a repository with source name `other-repo`:
+If you merge a repository with source name `other-repo` (new naming scheme):
 - Branch `main` becomes `other-repo-main`
 - Branch `feature/x` becomes `other-repo-feature/x`
-- Tag `v1.0.0` becomes `other-repo-v1.0.0`
+- Tag `v1.0.0` becomes `other-repo/v1.0.0`
 
 ## Safety Features
 
@@ -98,13 +80,13 @@ If you merge a repository with source name `other-repo`:
 ### 2. Absorbing Dependencies
 ```bash
 # Bring an external dependency in-house
-./git-merge-repos.zsh -s vendor/cool-lib https://github.com/other/cool-lib.git cool-lib
+./git-merge-repos-advanced.zsh -s vendor/cool-lib https://github.com/other/cool-lib.git cool-lib
 ```
 
 ### 3. Merging Forks
 ```bash
 # Import a fork to cherry-pick changes
-./git-merge-repos.zsh https://github.com/fork/project.git fork
+./git-merge-repos-advanced.zsh https://github.com/fork/project.git fork
 git checkout main
 git cherry-pick fork-feature-branch
 ```
@@ -120,7 +102,6 @@ git cherry-pick fork-feature-branch
 1. Clone or download the scripts
 2. Make them executable:
    ```bash
-   chmod +x git-merge-repos.zsh
    chmod +x git-merge-repos-advanced.zsh
    ```
 
@@ -145,6 +126,22 @@ Use the `-s` subdirectory option to avoid conflicts, or the `-p` flag to preserv
 
 ### Large repositories
 For very large repositories, the advanced script with `-r` flag uses git-filter-repo for better performance.
+
+## Testing
+
+Automated Zsh-based tests live in `test/` and can be run via:
+
+```bash
+zsh test/run_all_tests.zsh
+```
+
+PowerShell equivalents are being ported incrementally to `tests-windows/`.  A cross-platform
+runner will be added once the suite is complete.
+
+## Windows usage (experimental)
+
+The PowerShell version mirrors the Zsh script but hasn't yet been exercised by an automated
+suite or extensive real-world use.  Please file issues or PRs if you encounter problems.
 
 ## Recovery
 
