@@ -295,7 +295,7 @@ if [[ "$SKIP_TAGS" == false ]]; then
     CREATED_TAGS=()
     
     for tag in "${TAGS[@]}"; do
-        new_tag="${SOURCE_NAME}-${tag}"
+        new_tag="${SOURCE_NAME}/${tag}"
         
         print_color $BLUE "Processing tag: $tag -> $new_tag"
         

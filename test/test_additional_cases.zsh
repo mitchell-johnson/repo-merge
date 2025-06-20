@@ -31,8 +31,8 @@ cd "$TEMP_DIR/tags-dest"
 assert_success "$BASIC_SCRIPT '$SOURCE_REPO' tagtest" \
     "Merge with tags should succeed"
 
-assert_tag_exists "tagtest-v1.0" "Annotated tag should be created"
-assert_tag_exists "tagtest-v1.1" "Lightweight tag should be created"
+assert_tag_exists "tagtest/v1.0" "Annotated tag should be created"
+assert_tag_exists "tagtest/v1.1" "Lightweight tag should be created"
 
 end_test
 
@@ -53,8 +53,8 @@ assert_branch_exists "full-develop"
 assert_branch_exists "full-feature/new-ui"
 
 # Check tags
-assert_tag_exists "full-v1.0"
-assert_tag_exists "full-v2.0"
+assert_tag_exists "full/v1.0"
+assert_tag_exists "full/v2.0"
 
 end_test
 
@@ -158,8 +158,8 @@ OUTPUT=$($BASIC_SCRIPT "$SOURCE_REPO" tagtypes 2>&1)
 assert_success "echo 'done'" "Merge should handle various tag types"
 
 # Verify proper tags were created
-assert_tag_exists "tagtypes-annotated"
-assert_tag_exists "tagtypes-lightweight"
+assert_tag_exists "tagtypes/annotated"
+assert_tag_exists "tagtypes/lightweight"
 # Tree tag might be skipped - check output
 assert_contains "$OUTPUT" "tree-tag" "Should process tree tag (even if skipped)"
 

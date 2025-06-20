@@ -31,8 +31,8 @@ test_simple_merge() {
     assert_branch_exists "simple-develop" "Source develop branch should exist"
     
     # Verify tags
-    assert_tag_exists "simple-v1.0" "Source v1.0 tag should exist"
-    assert_tag_exists "simple-v1.1" "Source v1.1 tag should exist"
+    assert_tag_exists "simple/v1.0" "Source v1.0 tag should exist"
+    assert_tag_exists "simple/v1.1" "Source v1.1 tag should exist"
     
     # Verify original branches still exist
     assert_branch_exists "main" "Original main branch should exist"
@@ -181,9 +181,9 @@ test_skip_tags() {
     assert_branch_exists "notags-develop"
     
     # Tags should not exist
-    assert_tag_not_exists "notags-v1.0" \
+    assert_tag_not_exists "notags/v1.0" \
         "Tags should be skipped"
-    assert_tag_not_exists "notags-v1.1" \
+    assert_tag_not_exists "notags/v1.1" \
         "Tags should be skipped"
     
     end_test

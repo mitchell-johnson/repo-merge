@@ -186,7 +186,7 @@ test_special_characters() {
         "Branch with numbers should be created"
     
     # Check tag with special chars
-    assert_tag_exists "special-v1.0+build.123" \
+    assert_tag_exists "special/v1.0+build.123" \
         "Tag with + should be created"
     
     end_test
