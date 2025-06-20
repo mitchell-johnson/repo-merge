@@ -64,13 +64,22 @@ else
     ADVANCED_EXIT=1
 fi
 
+echo
+printf "${BLUE}Running Tag Renaming Tests...${NC}\n"
+echo "==================================="
+if ./test_tag_renaming.zsh; then
+    TAG_EXIT=0
+else
+    TAG_EXIT=1
+fi
+
 # Summary
 echo
 printf "${MAGENTA}=====================================${NC}\n"
 printf "${MAGENTA}Overall Test Summary${NC}\n"
 printf "${MAGENTA}=====================================${NC}\n"
 
-if [[ $BASIC_EXIT -eq 0 ]] && [[ $ERROR_EXIT -eq 0 ]] && [[ $ADDITIONAL_EXIT -eq 0 ]] && [[ $ADVANCED_EXIT -eq 0 ]]; then
+if [[ $BASIC_EXIT -eq 0 ]] && [[ $ERROR_EXIT -eq 0 ]] && [[ $ADDITIONAL_EXIT -eq 0 ]] && [[ $ADVANCED_EXIT -eq 0 ]] && [[ $TAG_EXIT -eq 0 ]]; then
     printf "${GREEN}All test suites passed!${NC}\n"
     exit 0
 else
@@ -79,6 +88,7 @@ else
     [[ $ERROR_EXIT -ne 0 ]] && printf "${RED}- Error handling tests failed${NC}\n"
     [[ $ADDITIONAL_EXIT -ne 0 ]] && printf "${RED}- Additional test cases failed${NC}\n"
     [[ $ADVANCED_EXIT -ne 0 ]] && printf "${RED}- Advanced features tests failed${NC}\n"
+    [[ $TAG_EXIT -ne 0 ]] && printf "${RED}- Tag renaming tests failed${NC}\n"
     exit 1
 fi
 
