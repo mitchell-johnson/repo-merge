@@ -78,7 +78,7 @@ if ($Branch) {
 
 $CreatedBranches = @()
 foreach ($b in $Branches) {
-    $local = "$SourceName-$b"
+    $local = "$SourceName/$b"
     $remoteRef = "$RemoteName/$b"
 
     if (git show-ref --verify --quiet "refs/heads/$local") {
@@ -141,7 +141,7 @@ if (-not $SkipTags) {
 # Optional auto-merge
 if ($MergeTo -and -not $DryRun) {
     $default = (git symbolic-ref "refs/remotes/$RemoteName/HEAD" 2>$null) -replace "refs/remotes/$RemoteName/",""; if (-not $default) { $default='main' }
-    $mergeSrc = "$SourceName-$default"
+    $mergeSrc = "$SourceName/$default"
     git checkout $MergeTo
     Write-Color Cyan "Merging $mergeSrc into $MergeTo"
     $flags = "--strategy=$Strategy --allow-unrelated-histories"

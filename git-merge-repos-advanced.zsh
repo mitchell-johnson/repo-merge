@@ -225,7 +225,7 @@ print_color $GREEN "\n=== Processing Branches ==="
 CREATED_BRANCHES=()
 
 for branch in "${BRANCHES[@]}"; do
-    local_branch="${SOURCE_NAME}-${branch}"
+    local_branch="${SOURCE_NAME}/${branch}"
     remote_branch="$REMOTE_NAME/$branch"
     
     print_color $BLUE "Processing branch: $branch -> $local_branch"
@@ -337,11 +337,11 @@ if [[ -n "$MERGE_TO" ]] && [[ "$DRY_RUN" == false ]]; then
     print_color $GREEN "\n=== Performing Automatic Merge ==="
     
     # Find the imported default branch
-    MERGE_SOURCE="${SOURCE_NAME}-${DEFAULT_BRANCH}"
+    MERGE_SOURCE="${SOURCE_NAME}/${DEFAULT_BRANCH}"
     
     if ! branch_exists "$MERGE_SOURCE"; then
         # Try common branch names
-        for try_branch in "${SOURCE_NAME}-main" "${SOURCE_NAME}-master"; do
+        for try_branch in "${SOURCE_NAME}/main" "${SOURCE_NAME}/master"; do
             if branch_exists "$try_branch"; then
                 MERGE_SOURCE="$try_branch"
                 break
@@ -401,7 +401,7 @@ fi
 
 # If no automatic merge requested and preserve-paths is set, switch to imported branch
 if [[ -z "$MERGE_TO" ]] && [[ "$PRESERVE_PATHS" == true ]] && [[ "$DRY_RUN" == false ]]; then
-    IMPORT_BRANCH="${SOURCE_NAME}-${DEFAULT_BRANCH}"
+    IMPORT_BRANCH="${SOURCE_NAME}/${DEFAULT_BRANCH}"
     if branch_exists "$IMPORT_BRANCH"; then
         print_color $BLUE "Checking out imported branch: $IMPORT_BRANCH"
         git checkout "$IMPORT_BRANCH"
@@ -450,7 +450,7 @@ if [[ "$DRY_RUN" == false ]]; then
     if [[ -z "$MERGE_TO" ]]; then
         print_color $YELLOW "2. Merge desired branches into your main branch:"
         print_color $YELLOW "   git checkout main"
-        print_color $YELLOW "   git merge ${SOURCE_NAME}-${DEFAULT_BRANCH}"
+        print_color $YELLOW "   git merge ${SOURCE_NAME}/${DEFAULT_BRANCH}"
     fi
     if [[ -n "$SUBDIRECTORY" ]]; then
         print_color $YELLOW "3. All files from the source repo are now in: $SUBDIRECTORY/"
